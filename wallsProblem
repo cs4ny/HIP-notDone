@@ -1,0 +1,44 @@
+#HIP
+#WALL EXERCISE
+
+def withinRange(mainCor,cor1,cor2):
+    """ Check to see if coordinate is within walls """
+
+    if mainCor >= cor1 and mainCor <= cor2:
+        return True
+
+playerCor = [0,2]
+wallListCor = [[0,0,10,0],[0,1,10,1],[0,3,10,3]]
+
+inX = 0
+bigIny = 0
+smallInY = 0
+inY = 0
+numWalls = 0
+for cor in wallListcor:
+    if withinRange(playerCor[0],cor[o],cor[3]):
+        inX += 1
+    if playerCor[1] >= cor[1]:
+        highInY += 1
+    if palyerCor[1] >= cor[3]:
+        highInY += 1
+    if playerCor[1] <= cor[1]:
+        smallInY += 1
+    if playerCor[1] <= cor[3]:
+        smallInY += 1
+
+if highInY > smallInY:
+    inY = highInY
+else:
+    inY = smallInY
+
+if inY % 2 != 0:
+    inY += 1
+
+inY = inY / 2
+if inx == 0:
+    numWalls = 0
+else:
+    numWalls = inY
+
+print(numWalls)
