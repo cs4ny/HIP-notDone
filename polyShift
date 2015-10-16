@@ -1,0 +1,218 @@
+#HIP
+#ENCRYPT/DECRYPT
+
+def main():
+    """ This program encrypt and decrypt cde """
+    # Set Loop, Start
+    loop = True
+    while loop:
+        # userChoices
+        userChoices = interface()
+
+        # 1. Instructions
+        if userChoices == '1':
+            print('\n')
+            print("1.INSTRUCTIONOS")
+            instructions()
+
+        # 2. Encryption
+        if userChoices == '2':
+            print("2.ENCRYPTION")
+            saveFile("ENCRYPT")
+
+        # 3. Decrypt with Key
+        if userChoices == '3':
+            print("3.DECRYPTION WITH KEY")
+            saveFile("DECRYPT")
+
+        # 4. Loading File
+        if userChoices == '4':
+            print("4.LOAD FILE")
+            loadFile()
+
+        # 5. Exit
+        if userChoices == '5':
+            print("YOU'VE EXIT THE PROGRAM")
+            loop = False
+
+def interface():
+    """ This function shows the interface and ask user for input """
+    print("")
+    print("WELCOME TO THE ENCRYPTION AND DECRYPTION LAB")
+    print("PLEASE SELECT YOUR OPTION: ")
+    print("1. INSTRUCTION")
+    print("2. ENCRYPTION")
+    print("3. DECRYPTION WITH KEY")
+    print("4. LOAD FILE")
+    print("5. EXIT")
+
+    # Ask for user's choice
+    userChoice = input("")
+    return userChoice
+
+def instructions():
+    """ This function prints the instructions """
+
+    print("PROGRAM BASED ON IVERSION EXAM'S POLYSHIFT")
+    print("ENCRYPT CODE: THE CODE YOU WOULD LIKE TO BE ENCRYPTED")
+    print("KEY TEXT: THE TEXT THAT WILL BE USED TO INDICATE THE AMOUNT OF SHIFTS THAT THE ECNRYPTING CODE HAS TO SHIFT")
+    print('\n')
+    print("LAYOUT OF PROGRAM ENCRYPTION: ")
+    print("1. REWRTITING THE KEY TEXT OVER AND OVER AGAIN TO MATCH THE LETTERS IN THE ENCRYPTING CODE")
+    print("2. FIGURE OUT THE INDEX/POSITION OF EACH LETTER IN BOTH THE ENCRYPT CODE AND THE KEY TEXT BASED ON A REFERENCE LIST")
+    print("3. ADD BOTH THE INDEX/PSOSITION NUMBERS TOGETHER BASED ON THEIR CORRESPONDING POSITIONS")
+    print("4. LET THE NEW SUM OF EACH LETTER BE THE NEW INDEX NUMBER")
+    print("5. BASE THE NEW INDEX NUMBER AGAINST THE REFERENCE LIST AND FINDTHE LTTER THAT CORRESPOND WITH IT")
+    print("6. REWRITE THE NEW ENCRYPTED CODE")
+
+def uAsk(state):
+    """ This function asks the User's input """
+
+    # Reference Lists (keyboard optional)
+    alphabets = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+
+    # User's Inputs
+    question = input("PLEASE ENTER THE CODE YOU WANT TO " +state+": ")
+    key = input("PLEASE ENTER THE KEY TEXT: ")
+
+    # User'inputs lowercase and get rid of space
+    question = question.lower()
+    question = question.split(" ")
+    question = "".join(question)
+
+    key = key.lower()
+    key = key.split(" ")
+    key = "".join(key)
+
+    # Encrypt or Decrypt the Message
+    messages = eDcrypt(alphabets,question,key,state)
+
+    print("YOUR",state,"ED MESSAGE IS ",messages)
+    return[question,key,messages]
+
+
+def eDcrypt(refList,decodeText,keyText,state):
+    """ This function encrypt/decrypt the text """
+
+    # Over Writing decodeText with keyText
+    # Looping over letters in decodeText and replace them with consecutive letters of keyText
+    kText = []
+    kIndex = 0
+    for letters in decodeText:
+        kText.append(keyText[kIndex])
+        if kIndex < len(keyText) - 1:
+            kIndex+=1
+        else:
+            kIndex = 0
+
+    # Getting the amount of shifts by indexing the keyText with the reference List
+    getShiftsList = []
+    sIndex = 0
+    for letters in kText:
+        if letters in refList:
+            getShifts = refList.index(letters)
+            getShiftsList.append(getShifts)
+        else:
+            print("Input not in reference list")
+
+    # Adding the number of hsits to the plainText's index to create a newIndex
+    decodeList = []
+    for letters in decodeText:
+        getIndex = refList.index(letters)
+
+        # Encrypt State
+        if state == "ENCRYPT":
+            newIndex = getIndex + getShiftsList[sIndex]
+            # Check for out of range
+            if newIndex >= len(refList):
+                newIndex = newIndex - len(refList)
+
+        # Decrypt State
+        if state == "DECRYPT":
+            newIndex = getIndex - getShiftsList[sIndex]
+            # Check for out of range
+            if newIndex < 0:
+                newIndex = newIndex + len(refList)
+
+        # Get new letters
+        newLetter = refList[newIndex]
+        decodeList.append(newLetter)
+
+        # Looping of Shifts
+        if sIndex < len(getShiftsList)-1:
+            sIndex += 1
+        else:
+            sIndex = 0
+
+    # Join decode list
+    decodeStr = ''.join(decodeList)
+    return decodeStr
+
+
+def saveFile(state):
+    """ This function save the file """
+
+    uOutput = uAsk(state)
+
+    # Setting values the user will save
+    plain = uOutput[0]
+    key = uOutput[1]
+    encryptedMessage = uOutput[2]
+
+    # Ask in case of Error Input
+    loop = True
+    while loop:
+        print('\n')
+        savFile = input("WOULD YOU LIKE TO SAVE? Y/N ")
+        saveFle = savFile.lower()
+
+        # YES
+        if savFile[0] == 'y':
+
+            #Write infos
+            fileS = open("1.PolyShift.txt",'a')
+            fileS.write(str(plain))
+            fileS.write(',')
+            fileS.write(str(key))
+            fileS.write(',')
+            fileS.write(str(encryptedMessage))
+            fileS.write('\n')
+            fileS.close()
+            print("YOUR FILE HAS BEEN SAVED")
+            loop = False
+
+        # NO
+        elif savFile[0] == 'n':
+            loop = False
+
+        else:
+            loop
+
+def loadFile():
+    """ This function load file """
+
+    # Opening file
+    fileL = open("1.PolyShift.txt",'r')
+    readList = []
+    for lines in fileL:
+        lines = lines.strip()
+        lines = lines.split(',')
+        readList.append(lines)
+
+    # Showing File
+    for index in range(len(readList)):
+        print("ENTRY NUMBER: ",str(index+1))
+        print("PLAIN TEXT: ",readList[index][0])
+        print("KEY TEXT: ",readList[index][1])
+        print("ENCRYPTED TEXT: ",readList[index][2])
+        print('\n')
+
+#Main
+main()
+        
+
+    
+        
+    
+    
+    
