@@ -1,0 +1,154 @@
+# HIP
+#--------------------------------------------------------------------
+# SHOPAHOLIC UVA 11369
+
+# PriceList
+priceList = [400,100,200,350,300,250]
+
+# Reverse Sort
+priceList = sorted(priceList,reverse = True)
+
+# Discount List
+disList = []
+for i in range(-1,len(priceList),3):
+    if i > 0:
+        disList.append(priceList[i])
+
+# Sum of discount
+totDisCount = sum(disList)
+print(totDisCount)
+
+#---------------------------------------------------------------------
+#OPERATOR NOT = 
+def main():
+    """ Compare 2 number not = """
+
+    while True:
+        num1 = int(input("Enter 1st number: "))
+        num2 = int(input("Enter 2nd number: "))
+
+        num1List = listNum(num1)
+        num2List = listNum(num2)
+
+        check = compare(num1List,num2List)
+
+        if check == False:
+            print(num1," is smaller than ",num2)
+        else:
+            print(num1," is highet than ",num2)
+
+def listNum(number):
+    numList = []
+    for i in range(number):
+        numList.append(1)
+    return numList
+
+
+def compare(num1List,num2List):
+    for i in range(len(num2List)):
+        try:
+            num1List.remove(1)
+        except:
+            return False
+
+#main()
+
+#---------------------------------------------------------------------------
+#HAPPY BIRTHDAY
+names = ['mom','dad','girlfriend']
+songs = ['happy','birthday','to','you','happy','birthday','to','you',
+         'happy','birthday','to','Tyler','happy','birthday','to','you']
+
+for index in range(len(songs)):
+    nameIndex = index
+    try:
+        if nameIndex == len(names):
+            nameIndex = (index % 3) - 3
+            print(names[nameIndex],songs[index])
+    except:
+        pass
+
+#-----------------------------------------------------------------------------
+# ROBOTS (number)
+# Initial pos is the orgin
+moveList = []
+maxMove = int(input("Enter the number of movements: "))
+
+for i in range(maxMove):
+    q = input("Enter movement: ")
+    if q[0] == 's':
+        q = moveList[int(q[-1])-1]
+    q = int(q)
+    moveList.append(q)
+
+pos = sum(movelist)
+print(pos)
+
+
+#---------------------------------------------------------------------------------
+# TRAIN
+# 1: MF MF; 2:FM FF MF MM; 3:MM  FF
+sInput = 'MF MF MF MF FF'
+lInput = sInput.split(" ")
+loop = False
+
+for index in range(len(lInput)):
+    if lInput[0][0] != lInput[-1][1]:
+        try:
+            if lInput[index][1] != lInput[index+1][0]:
+                loop = True
+            else:
+                loop = False
+        except:
+            pass
+    else:
+        loop = False
+
+print("Train loop is ", loop)
+
+#--------------------------------------------------------------------
+# CREDIT CARD
+cCard = '5181271099000012'
+ccard = list(cCard)
+twiceNum = []
+oneNum = []
+for i in range(0,len(cCard),2):
+    if i > 0:
+        oneNum.append(int(cCard[i-1]))
+    cCard[i] = int(cCard[i]) * 2
+    twiceNum.append(str(cCard[i]))
+
+oneNum.append(int(cCard[len(cCard)-1]))
+
+for number in twiceNum:
+    if len(number) > 1:
+        nNum = 0
+        for letters in number:
+            nNum += int(letters)
+        twiceNum[twiceNum.index(numer)] = int(nNum)
+    else:
+        twiceNum[twiceNum.index(numer)] = int(number)
+
+if str(sum(twicenum) + sum(oneNum))[-1] != 0:
+    print("Not a valide credit card",str(sum(twiceNum)+sum(oneNum)))
+else:
+    print("Valide credit card",str(sum(twiceNum)+sum(oneNum)))
+
+#----------------------------------------------------------------------------
+# SHAPE EXAMPLE
+spaces = 10
+for i in range(5):
+    for k in range(spaces):
+        print(" ")
+    for j in range(2*i-1):
+        print("*")
+        spaces -= 1
+        print('\n')
+    
+        
+                    
+                      
+                
+              
+         
+            
