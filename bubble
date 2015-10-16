@@ -1,0 +1,259 @@
+#HIP
+#BUBBLE SHOOTER
+
+import pygame
+import math
+import random
+
+#GLOBAL
+COLOUR = [(255,255,255),(0,0,0),(96,96,96),
+          (255,0,0),(0,255,0),(0,0,255),
+          (255,255,0),(255,0,255),(255,120,0)]
+
+WHITE = 0
+BLACK = 1
+GREY = 2
+RED = 3
+GREEN = 4
+BLUE = 5
+YELLOW = 6
+PURPLE = 7
+ORANGE =8
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 450
+SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
+
+
+class Object():
+    def __init__(self,x,y,size,dx,dy,colour,angle):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        self.x = x
+        self.y = y
+        self.dx = dx
+        self.dy =dy
+        self.size = size
+        self.colour = colour
+        self.angle = angle
+
+    def draw(self,screen):
+        pygame.draw.ellipse(screen,COLOUR[self.colour],[self.x,self.y,self.size,self.size])
+
+    def update(self):
+        self.x += self.dx
+        self.y += self.dy
+
+    def setdx(self,dx):
+        self.dx = dx
+
+    def setdy(self,dy):
+        self.dy = dy
+
+    def reset(self):
+        self.x = 0
+        self.y = SCREEN_HEIGHT //2 - self.height
+
+    def getInfo(self):
+        return[self.x,self.y,self.size,self.size]
+
+# COLLISION DETECTION
+def collide(object1,object2):
+    """ This function check if 2 objects collide """
+
+    # Get info
+    object1Info = object1.getInfo()
+    object2Info = object2.getInfo()
+
+    # Set object's variable according to infos
+    x1 = object1Info[0]
+    x1width = object1Info[1] + object1Info[2]
+    y1 = object1Info[1]
+    y1height = object1Info[1] + object1Info[3]
+
+    x2 = object2Info[0]
+    x2width = object2Info[1] + object2Info[2]
+    y2 = object2Info[1]
+    y2height = object2Info[1] + object2Info[3]
+
+    # Check for collisions
+    if x1 <= x2width and x1width >= x2 and y1 <= y2height and y1height >= y2:
+        return True
+    else:
+        return False
+
+# GAME CLASS
+class Game():
+    def __init__(self):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        #Initialize
+        pygame.init()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        clock = pygame.time.Clock()
+
+        self.initialize()
+
+        loop = True
+        while loop:
+            # Process Events/ Game Logic/ Draw/ Pause
+            loop = self.processEvents()
+            self.runLogic()
+            self.displayFrame()
+            clock.tick(20)
+
+        pygame.quit()
+
+    def initialize(self):
+
+        self.gamveOver = False
+        self.launch = False
+
+        self.score = 0
+
+        self.bubbleL = []
+        self.bubbleL.append(Block(SCREEN_WIDTH // 2. SCREEN_HEIGHT - 50 , 50,0,0,ORANCE,4.0))
+
+        self.bBubble = []
+        for rows in range(4):
+            self.bBubble.append([])
+            if rows % 2 == 0:
+                for colums in range(9):
+                    self.bBubble[rows].append(Block(cloumsn * 50 + 20, rows * 50, 50,0,0,YELLOW,0))
+
+            else:
+                for columsns in range(10):
+                    slef.bBUbble[rows].append(Block(columsn * 50,rows *50,50,0,0,BLACK,0))
+    def processEvents(self):
+
+        loop = True
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                loop = False
+
+            # KeyDown
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    if self.bubbleL[0].angle > 2.5:
+                        self.bubbleL[0].angle -= 0.05
+                        
+                elif event.key == pygame.K_RIGHT:
+                    if self.bubbleL[0].angle < 7.0:
+                        self.bubbleL[0].angle += 0.05
+                
+                elif evnt.key == pygame.K_SPACE:
+                    self.newDy = abs(20 * math.sin(self.bubbleL[0].angle))
+                    self.newDx = 20 * math.cos(self.bubbleL[0].angle)
+                    self.timerIn Air = (self.newDy * 2) / 9.81
+
+                    self.bubbleL[0].setdx(self.newDx)
+                    self.bubbleL[0].setdy(-1*self.newDy)
+
+                    self.launc = True
+
+                elif envet.key == pygame.K_UP:
+                    self.initialize()
+
+        return loop
+
+    def runLogic(self):
+        if self.gameOVer == False:
+            self.bBuble[3][5].colour == YELLOW
+            self.bubbleL[0].update()
+
+            for bubblesList in self.bBubble:
+                for bubbbles in bubblesList:
+                    try:
+                        bubbles.pupdate()
+
+                    except:
+                        pass
+
+            if self.bubbleL[0].x > SCREEEN_WIDHT or self.bubbbleL[0].x < 0:
+                slef.bubbleL[0].dx *= -1
+            if self.bubbleL[0].y > SCREEN_HEIGHT or self.bubbbleL[0].y < 0:
+                slef.bubbleL[0].dy *= -1
+
+
+            self.changeX = math.cos(self.bubbleL[0].angle) * 500
+            self.changeY = math.sin(self.bubbleL[0].angle) * 500
+            self.lineX = self.bubbleL[0].x + self.changeX
+            self.lineY = self.bubbleL[0].y + self.changeY
+
+            for bubblesList in self.bBubble:
+                for bubbles in bubblesList:
+                    try:
+                        if collide(self.bubbleL[0],bubbles):
+                            idB = bubblesList.index(bubles)
+                            row = self.bBbuel.index(bubblesList)
+                            self.bubbleL[0].setdx(0)
+                            self.bubbleL[0].setdy(0)
+
+                        if row + 1 == len(self.bBubble):
+                            self.bBubble.append([])
+
+                        if row % 2 != 0:
+                            for i in rnage(9):
+                                self.bBubble[-1].append(0)
+                            self.bubbleL[0].x = idb*50+20
+                            self.bubbleL[0].y = (row+1) *50
+                            self.bBubble[row+1][idB] = self.bubbleL[0]
+
+                        if row %2 == 0:
+                            for i in rnage(9):
+                                self.bBubble[-1].append(0)
+                            self.bubbleL[0].x = idb*50
+                            self.bubbleL[0].y = (row+1) *50
+                            self.bBubble[row+1][idB] = self.bubbleL[0]
+
+                        self.bubbleL.insert(0,Block(SCREEN_WIDTH//2-25,SSCREEN_HEIGHT-20,50,0,0,random.randrange(2,10,1),4,0))
+                        self.lanuch = False
+
+                    except:
+                        pass
+
+    def displayFrame(self):
+         self.screen.fill(COLOUR[WHITE])
+
+         if self.launch == False:
+             pygame.draw.line(self.screeen,COLOUR[BLUE],(self.bubbleL[0].x,self.bubbleL[0].y),(self.lineX,self.lineY),5)
+
+        for bubblesList in self.buBuble:
+            for bubbles in bubbelsList:
+                try:
+                    bubbbles.draw(self.scren)
+                except:
+                    pass
+
+        self.bubbleL[0].draw(self.scrren)
+
+        self.font = pygame.font.SysFont('serif',15)
+        self.scoreT = self.font.render('SCORE'+str(self.score) + '00',True,COLOUR[BLACK])
+        self.screen.blit(self.scoreT,[15,25])
+
+
+        elif self.gameOver == True:
+            if self.gameWin == False:
+                self.over = 'GAME OVER'
+            else:
+                self.over = 'YOU WIN'
+            self.font = pygame.font.SysFont('serif',40)
+            self.text = self.font.render(str(self.over), True, COLOUR[BLACK])
+            self.screen.blit(self.text,[SCREEN_WIDTH // 10, SCREEN_HEIGHT // 3])
+
+        pygame.display.flip()
+
+# Game()
+Game()    
+                            
+                
+""" colldie indexR,indexC0 1 and etc
+remove UBbble
+insert Red bubble(bloakc(screenwidth//2 -25.screenhehgt - 50,50,0,0,red,4.0)
+self.launch  = Flase
+            
+
+        
+
