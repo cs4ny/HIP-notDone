@@ -1,0 +1,55 @@
+#HIP
+#SNAIL UVA 573 WRONG ANSWER ?
+
+def main():
+    """ This program will decide if the snial fial or not , not with 0 """
+
+    # Loop
+    while True:
+
+        # Take in user's inputs
+        wHeight = int(input("Please enter the wells' height: "))
+        cHeight=int(input("Please enter the snail's climbing height: "))
+        sHeight = int(input("Please enter the snail's sliding height: "))
+        fFactor = float(input("Please enter the snial's faigue factor: "))
+
+        # Solve
+        solveIt = solve(wHeight,cHeight,sHeight,fFactor)
+
+        # Output
+        if solveIt[0] == 's':
+            print("Success in " + str(solveIt[1]) + " days")
+        elif solveIt[0] == 'f':
+            print("Failure in " + str(solveIt[1]) + " days")
+
+def solve(wellHeight,climbHeight,slideHeight,fatigue):
+    """ This function solve the problem """
+
+    # Set initial values
+    climbDis = 0
+    day = 0
+    nClimb = climbHeight
+
+    # Loop
+    while True:
+        # Keeping track of days
+        day += 1
+
+        # Fatigue factor
+        decrease = nClimb * fatigue
+        climbHeight -= decrease
+
+        climbDis += climbHeight
+
+        # Return
+        if climbDis > wellHeight:
+            return['s',day+1]
+            break
+
+        if climbDis < 0:
+            return['f',day+1]
+            break
+
+#main()
+main()
+        
