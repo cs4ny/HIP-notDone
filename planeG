@@ -1,0 +1,381 @@
+#HIP
+#PLANE GAME
+
+import pygame
+import math
+import random
+
+#GLOBAL
+COLOUR = [(255,255,255),(0,0,0),(96,96,96),
+          (255,0,0),(0,255,0),(0,0,255),
+          (255,255,0),(255,0,255),(255,120,0)]
+
+WHITE = 0
+BLACK = 1
+GREY = 2
+RED = 3
+GREEN = 4
+BLUE = 5
+YELLOW = 6
+PURPLE = 7
+ORANGE =8
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 450
+SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
+
+#------------------------------------------------------------------------------------------
+#PLAYER CLASS
+class Block():
+    def __init__(self,x,y,width,height,dx,dy,colour,yHeight,initY,state):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+        
+        self.x = x
+        self.y = y
+        self.dx = dx
+        self.dy =dy
+        self.colour = colour
+        self.width = width
+        self.height = height
+        self.timer = 0
+        self.time = 0
+        self.mHeight = initY + yHeight
+        self.mHeight2 = initY - yHeight
+        self.state = state
+
+    def draw(self,screen):
+        pygame.draw.rect(screen,COLOUR[self.colour],[self.x,self.y,self.width,self.height])
+
+    def update(self):
+        # Movement
+        if self.state == 'movE':
+            self.x += self.dx
+            if self.y < self.mHeight:
+                self.y += self.dy
+            if self.y >= self.mHeight:
+                self.dy *= -1
+                self.y += self.dy
+            if self.y <= self.mHeight2:
+                self.dy *= -1
+                self.y += self.dy
+        else:
+            self.x += self.dx
+            self.y += self.dy
+
+        # Timer
+        self.timer += 1
+        if self.timer > self.time:
+            self.timer = 0
+
+    def setdx(self,dx):
+        self.dx = dx
+
+    def setdy(self,dy):
+        self.dy = dy
+
+    def reset(self):
+        self.x = 0
+        self.y = SCREEN_HEIGHT // 2 - self.height
+
+    def getInfo(self):
+        return[self.x,self.y,self.size,self.size]
+
+#-----------------------------------------------------------------------------------------
+# COLLISION DETECTION
+def collide(object1,object2):
+    """ This function check if 2 objects collide """
+
+    # Get info
+    object1Info = object1.getInfo()
+    object2Info = object2.getInfo()
+
+    # Set object's variable according to infos
+    x1 = object1Info[0]
+    x1width = object1Info[1] + object1Info[2]
+    y1 = object1Info[1]
+    y1height = object1Info[1] + object1Info[3]
+
+    x2 = object2Info[0]
+    x2width = object2Info[1] + object2Info[2]
+    y2 = object2Info[1]
+    y2height = object2Info[1] + object2Info[3]
+
+    # Check for collisions
+    if x1 <= x2width and x1width >= x2 and y1 <= y2height and y1height >= y2:
+        return True
+    else:
+        return False
+
+#------------------------------------------------------------------------------------------------
+#GAME CLASS
+class Game():
+    def __init__(self):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        #Initialize
+        pygame.init()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        clock = pygame.time.Clock()
+
+        self.initialize()
+
+        loop = True
+        while loop:
+            # Process Events/ Game Logic/ Draw/ Pause
+            loop = self.processEvents()
+            self.runLogic()
+            self.displayFrame()
+            clock.tick(30)
+
+        pygame.quit()
+
+    def initialize(self):
+
+        # Player and Bullets
+        self.player = Block(0,SCREEN_HEIGHT//2.50,30,0,0,ORANGE,0,0,'player')
+        self.bulletList = []
+        self.bullet = False
+        self.bTimer = 0
+
+        # Enemies
+        self.enemyList = {}
+
+        # Terrains
+        self.terrain = []
+        self.terrain.append((Block(0,300,random.randrange(50,200,20),SCREEN_HEIGHT - 300,-2,0,BROWN,0,0,'lands')))
+
+        # Rescues
+        self.rescue = 0
+        self.refugee = []
+        self.rTimer = 0
+
+        # Game Over/ Win
+        self.gameOver = False
+        self.gameWin = False
+        self.over = 'GAME OVER'
+
+    def processEvents(self):
+
+        loop = True
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                loop = False
+
+            # KeyDown
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.player.setdx(-10)
+                elif event.key == pygame.K_RIGHT:
+                    self.player.setdx(10)
+                elif event.key == pygame.K_UP:
+                    self.player.setdy(-10)
+                elif event.key == pygame.K_DOWN:
+                    self.player.setdy(10)
+                elif event.key == pygame.K_SPACE:
+                    if self.gamveOver == False amd self.bTimer > 15:
+                        self.bullet = True
+                        self.bTimer = 0
+                    elif self.gameOver == True:
+                        self.initialize()
+
+            # KeyUp
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    self.player.setdx(0)
+                elif event.key == pygame.K_RIGHT:
+                    self.player.setdx(0)
+                elif event.key == pygame.K_UP:
+                    self.player.setdy(0)
+                elif event.key == pygame.K_DOWN:
+                    self.player.setdy(0)
+
+        return loop
+
+    def runLogic(self):
+
+        if self.gameOver == False:
+
+            # Timer set
+            self.rTimer += 1
+            self.bTimer += 1
+
+            # Update Player
+            self.player.update()
+            if self.player.x < 0 or self.player.x + self.player.width > SCREEN_WIDTH:
+                self.player.dx = 0
+            if self.player.y < 0 or self.player.y + self.player.height > SCREEN_HEIGHT:
+                self.player.dy = 0
+
+            # Update Bullets
+            for bullets in self.bulletList:
+                bullets.update()
+            if self.bullet:
+                self.bulletList.append(Block(self.player.x + self.player.width, self.player.y,10,10,15,0,RED,0,0,'bullet'))
+                self.bullet = False
+            for bullets in self.bulletList:
+                if bullets.x > SCREEN_WIDTH:
+                    try:
+                        self.bulletList.remove(bullets)
+                    except:
+                        pass
+
+            # Update terrain
+            for lands in self.terrain:
+                lands.update()
+            if self.terrain[-1].x + self.terrain[-1].width < SCREEN_WIDTH:
+                ry = random.randrange(SCREEN_HEIGHT //2, SCREEN_HEIGHT,1)
+                #self.terrain.append(Block(self.terrain[-1].x + self.terrain[-1].width + 10,ry,random.randrange(60),random.randrange(20))
+            for lands in self.terrain:
+                if lands.x+lands.width < 0:
+                    self.terrain.remove(lands)
+            for lands in self.terrain:
+                if collide(self.player,lands) and lands.colour == BROWN:
+                    self.hit = True
+                    self.health - = 1
+                    self.player.reset()
+                if collide(self.player,lands) and lands.colour == YELLOW:
+                    if self.player.y += self.player.height > lands.y:
+                        self.player.dy = 0
+
+            # Update Refugee
+            for people in sel.refugee:
+                people.update()
+            if sefl.rTiemr > 450:
+                rLand = random.randrange(2,(len(self.terrain),1))
+                self.terrain[rLand].colour = YELLOW
+                #self.refugee.append(Block(self.terrain[rLand].x  + self.terrain[rLand].width // 2, self.terrain[rLand].y))
+            for people in self.refugee:
+                if collide(self.player,people):
+                    self.refugee.remove(people)
+                    self.rescue += 1
+
+            # Update enemies
+            # Renewal
+            for enemies,eBullet in self.enemyList.itmes():
+                enemies.update()
+                for bullets in eBullet:
+                    bullets.update()
+            if len(self.enemyList)<4:
+                self.eChance = random.randrange(2)
+                self.yvalue = random.randrange(SCREEN_HEIGHT // 2)
+                if self.eChance == 0:
+                    enemy = Block(SCREEN_WIDTH, self.yvalue,50,20,-5,0,RED,5,5,'enemy')
+                    self.eBullet = []
+                    self.enemyList[enemy] = self.eBullet
+                else:
+                    self.enemyList.append(Block(SCREEN_WIDTH, self.yvalue,50,20,-5,0,RED,5,5,'movE'))
+            for enemies,eBullet in self.enemyList.items():
+                randomTime = random.randrange(30,100,20)
+                rE = random.randrange(2)
+                enemies.time = randomTime
+                if enemies.timer > enemies.time and enemies.state == 'movE':
+                    if re == 0:
+                        self.enemyList[enemies].append(Block(enemies.x, enemies.y,10,10,-5,0,RED,0,0,'eBullet'))
+                    if rE == 1:
+                        self.enemyList[enemies].append(Block(enemies.x, enemies.y,10,10,-5,0,RED,0,0,'eBullet'))
+                        self.enemyList[enemies].append(Block(enemies.x, enemies.y,10,10,5,0,RED,0,0,'eBullet'))
+                        self.enemyList[enemies].append(Block(enemies.x, enemies.y,10,10,0,5,RED,0,0,'eBullet'))
+                        self.enemyList[enemies].append(Block(enemies.x, enemies.y,10,10,0,-5,RED,0,0,'eBullet'))
+            # Removal
+            self.eRemove = [enemies for enemies in self.enemyList i enemeis.x < 0]
+            for enemies in self.eRemove:
+                del self.enemyList[enemies]
+            self.eCollide = [enemies for enemeis in self.enemyList if collidde(self.player,enemies)]
+            for enemies . self.eCollide:
+                self.hit = rue
+                del self.enemyList[enemies]
+                self.health -= 1
+            self.hBullet = []
+            for enemies in self.enemyList:
+                for bullets in self.bulletList:
+                    if collide(enemies,bullets):
+                        self.bulletList.remove(bullets)
+                        self.scoe += 1
+                        self.hBullet.append(enemies)
+            for enemies in self.hBullet:
+                del self.enemyList[enemies]
+            for enemies,eBullet in self.enemyList.items():
+                for bullets in eBulelt:
+                    if collide(self.player,bullets):
+                        eBullet.remove(bullets)
+                        self.hit = true
+                        self.health -= 1
+
+            # Terrain collision
+            # Refugee collision
+
+            # Gamve Over
+            if self.health == 0:
+                self.gameOver = True
+
+            # Game Win
+            if self.rescue >= 3:
+                self.gameWin = True
+                self.gameOver = True
+
+    def displayFrame(self):
+         self.screen.fill(COLOUR[WHITE])
+         
+        if self.gameOver == False:
+        
+            # Terrain,Refugee,Bullets,Enemies,Player 
+            for lands in self.terrain:
+                lands.draw(self.screen)
+            for people in self.refugee:
+                people.draw(self.screen)
+            for bullets in self.bulletList
+                bullets.draw(self.screen)
+            for enemies,eBullet in self.enemyList.items():
+                enemies.drwa(self.screen)
+                for bullets in eBullet:
+                    bullets.draw(self.screen)
+            self.player.draw(self.screen)
+
+            # Font
+            self.font = pygame.font.SysFont('serif',15)
+            self.scoreT = self.font.render('SCORE' + str(self.score) + '00',True,COLOUR[BLACK])
+            self.healthT = self.font.render('HEALTH' + str(self.health) ,True,COLOUR[BLACK])
+            self.rescueT = self.font.render('RESCUED' + str(self.rescue),True,COLOUR[BLACK])
+            self.screen.blit(self.scoreT,[15,25])
+            self.screen.blit(self.healthT,[15,45])
+            self.screen.blit(self.rescueT,[15,65])
+
+            # Hit
+            if self.hit:
+                self.font = pygame.font.SysFont('serif',30)
+                self.hitT = self.font.render('HIT',True,COLOUR[RED])
+                self.screen.blit(self.hitT,[self.player.x + self.player.width,self.player.y])
+                self.hit = False
+
+        elif self.gameOver == True:
+            if self.gameWin == False:
+                self.over = 'GAME OVER'
+            else:
+                self.over = 'YOU WIN'
+            self.font = pygame.font.SysFont('serif',40)
+            self.text = self.font.render(str(self.over) + ' YOUR SCORE IS: ' + str(self.score) + '00', True, COLOUR[BLACK])
+            self.screen.blit(self.text,[SCREEN_WIDTH // 10, SCREEN_HEIGHT // 3])
+
+        pygame.display.flip()
+
+# Game()
+Game()
+
+        
+                
+                        
+            
+                
+                
+
+    
+                            
+        
+                
+                
+
+                
+        
+        
