@@ -1,0 +1,126 @@
+#HIP
+#CAT'S PROBLEM UVA 107
+
+import math
+
+iHeight = 100
+wCats = 50
+wCatsH = 1
+rCats = 0
+nCatsH = 1
+
+def main():
+    """ This program will sovlve the worker cat's problem from UVA """
+
+    # user's input
+    workerCats = int(input("Please enteer the number of worker cats: "))
+    catsHeight = int(input("Please enter the initial cat's height: "))
+
+    # Get the number of cats perhat
+    catsPerHat = getBase(workerCats)
+
+    # Get the sum an lksist of all relax cat
+    relaxCat = numRelax(workerCats,catsPerHat)
+    numRelaxCat = sum(relaxCat) - workerCats
+
+    # Get the total stacked height
+    totalHeight = stackHeight(catsPerHat,catsHeight,relaxCat)
+
+    # Output
+    print("The total number of ralaxing cats is ",numRelaxCat)
+    print("The stacked height of all cats is ",totalHeight)
+
+def getBase(number):
+    """ This function will return a prime factor """
+
+    # Initialize prime numbers and create a primeFactorList
+    prime = [2,3,5,7,11,13,17,19,23,29,31,41,43,47,53,59,61,67,67,71,73,79,83,89,91]
+    primeFactorList = []
+
+    # Looping through index
+    index = 0
+    while number != 1:
+        # If divisible
+        if number % prime[index] == 0:
+            number = number / prime[index]
+            primeFactorList.append(prime[index])
+        else:
+            index += 1
+
+    # Counting the number of occurences
+    numCountList = []
+    for number in primeFactorList:
+        numCount = primeFactorList.count(number)
+        numCountList.append(numCount)
+
+    # Checking for bases
+    factorList = []
+    if len(set(numCountList)) == 1:
+        for index in range(len(primeFactorList)):
+            try:
+                if primeFactorList[index] != primeFactorList[index+1]:
+                    number = primeFactorList[index] * primeFactorList[index+1]
+                    factorList.append(number)
+
+                else:
+                    number = primeFactorList[index]
+                    factorList.append(number)
+
+            except:
+                pass   
+    # Return
+    return max(factorList)
+
+
+def numRelax(workerCats,catsPerHat):
+    """ This function find the number of relaxing cats """
+
+    # Create  catsList
+    catsList = []
+
+    # Figure out power
+    thePow = int(round(math.log(workerCats,catsPerHat)))
+
+    # Appedn different number of relax cats in a list
+    for i in range(thePow):
+        relaxCats = pow(catsPerHat,i)
+        catsList.append(relaxCats)
+
+    # Find the sum of catsList
+    totCatsList = catsList[:]
+    totCatsList.append(workerCats)
+
+    # Return list
+    return totCatsList
+
+def stackHeight(catsPerHat,catsHeight,totCatsList):
+    """ This function return the staced height """
+
+    # Initialize
+    totHeight = 0
+
+    # Loop
+    for catIndex in range(len(totCatsList)):
+
+        # take the sum of heights of cats with thte same height
+        stackHeightperGroup = catsHeight * totCatsList[catIndex]
+
+        # Change the height
+        catsHeight = catsHeight / (catsPerHat +1 )
+
+        # Add to the total height
+        totHeight += stackHeightperGroup
+
+    # Return
+    return totHeight
+
+#main()
+main()
+
+    
+
+                                    
+    
+                    
+    
+                    
