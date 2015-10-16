@@ -1,0 +1,295 @@
+# HIP
+# FROGGER
+
+import pygame
+import math
+import random
+import time
+
+#GLOBAL
+COLOUR = [(255,255,255),(0,0,0),(96,96,96),
+          (255,0,0),(0,255,0),(0,0,255),
+          (255,255,0),(255,0,255),(255,120,0)]
+
+WHITE = 0
+BLACK = 1
+GREY = 2
+RED = 3
+GREEN = 4
+BLUE = 5
+YELLOW = 6
+PURPLE = 7
+ORANGE =8
+
+SCREEN_WIDTH = 700
+SCREEN_HEIGHT = 480
+SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
+
+#----------------------------------------------------------------------------------------------------
+#PLAYER CLASS
+class Block():
+    def __init__(self,x,y,width,height,colour,dx,dy):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+        
+        self.x = x
+        self.y = y
+        self.dx = dx
+        self.dy =dy
+        self.colour = colour
+        self.width = width
+        self.height = height
+
+    def draw(self,screen):
+        pygame.draw.rect(screen,COLOUR[self.colour],[self.x,self.y,self.width,self.height])
+
+    def update(self):
+        self.x += self.dx
+        self.y += self.dy
+
+    def setdx(self,dx):
+        self.dx = dx
+
+    def setdy(self,dy):
+        self.dy = dy
+
+    def getInfo(self):
+        return[self.x,self.y,self.size,self.size]
+
+#-----------------------------------------------------------------------------------------------------
+# COLLISION DETECTION
+def collide(object1,object2):
+    """ This function check if 2 objects collide """
+
+    # Get info
+    object1Info = object1.getInfo()
+    object2Info = object2.getInfo()
+
+    # Set object's variable according to infos
+    x1 = object1Info[0]
+    x1width = object1Info[1] + object1Info[2]
+    y1 = object1Info[1]
+    y1height = object1Info[1] + object1Info[3]
+
+    x2 = object2Info[0]
+    x2width = object2Info[1] + object2Info[2]
+    y2 = object2Info[1]
+    y2height = object2Info[1] + object2Info[3]
+
+    # Check for collisions
+    if x1 <= x2width and x1width >= x2 and y1 <= y2height and y1height >= y2:
+        return True
+    else:
+        return False
+
+#---------------------------------------------------------------------------------------------------
+# GAME CLASS
+class Game():
+    def __init__(self):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        #Initialize
+        pygame.init()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        clock = pygame.time.Clock()
+
+        self.initialize()
+
+        loop = True
+        while loop:
+            # Process Events/ Game Logic/ Draw/ Pause
+            loop = self.processEvents()
+            self.runLogic()
+            self.displayFrame()
+            clock.tick(20)
+
+        pygame.quit()
+
+    def initialize(self):
+
+        # Game Over
+        self.gameOver = False
+
+        # Score,Timer
+        self.score = 0
+        self.start = time.time()
+
+        # Player
+        self.player = Block(350,SCREEN_HEIGHT - 100,30,30,ORANGE,0,0)
+        self.up = False
+
+        # Land
+        self.landList = []
+        for i in range(500,0,-50):
+            self.landList.append(Block(0,i,SCREEN_WIDHT,self.player.height + 10,BROWN,0,1))
+
+        # Water
+        self.waterList = []
+        self.waterList.append(Block(0,200,SCREEN_WDITH,self.player.height + 10,BLUE,0,1))
+
+        # Water, Lilies
+        self.wLilyDict = {}
+        self.maxSpeed = 5
+        self.size = random.randrange(50,150)
+        self.speed = random.randrange(-self.maxSpeed,self.maxSpeed,self.maxSpeed // 5)
+        for waters in self.waterList:
+            self.lilyList = []
+            for i in range(self.size , SCREEN_WIDTH,self.size * 2):
+                self.lilyList.append(Block(i,waters.y,self.size,self.player.height + 10,GRENN,self.speed,0))
+            self.wLilyDict[waters] = self.lilyList
+
+    def processEvents(self):
+
+        loop = True
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                loop = False
+
+            # KeyDown
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.player.x -= self.player.width
+                elif event.key == pygame.K_RIGHT:
+                    self.player.x += self.player.width
+                elif event.key == pygame.K_UP:
+                    self.up = True
+                elif event.key == pygame.K_SPACE:
+                    self.initialize()
+            # KeyUp
+            elif event.type == pygame.KEYUP:
+                self.player.setdx(0)
+                self.player.setdy(0)
+
+    def runLogic(self):
+
+        if self.gameOVer == False:
+
+            if self.player.y + self.player.height > SCREEN_HEIGHT:
+                self.gameOver = True
+
+            if time.time() - self.start > 10:
+                self.maxSpeed += 1
+                self.start = time.time()
+
+            self.playuer.update()
+
+            for lands in self.landList:
+                lands.update()
+
+            for waters,lilyList in self.wLilydict.itmes():
+                waters.update()
+                for lilys in lilyList:
+                    lily.y = waters.y
+                    lilys.update()
+
+            if self.up:
+                self.score += 1
+                for lands in self.landList:
+                    lands.y += lands.height
+                for waters in self.wLilySDict.keys():
+                    waters.y += waters.ehgith
+                self.up = False
+
+            for wters,lilyList in self.wLilydict.itmes():
+                for lilys in lilyList:
+                    lilys.y = waters.y
+
+            for waters,lilyList ins elf.wLilyDict.itesm():
+                for lilys in lilyList:
+                    if lilys.x > SCREEN_WIDTH:
+                        lilyList.remove(lileyes)
+                        lilyList.append(Block(0,waters.y,lily.width,selfplayer.height+1-,GREEN,lilys.dx,0))
+                    if lilys.x < 0:
+                        lilyList.remove(lilys)
+                        lilyList.append(Block(SCREEN_WIDTH,waters.y,lily.width,selfplayer.height+1-,GREEN,lilys.dx,0))
+
+            self.yValand = self.landList[-1].y
+            self.yVawater = self.waterList[-1].y
+            if self.yValand < self.yVawater:
+                self.yVal = self.yValand
+            else:
+                self.yVal = self.yVawater
+
+            if len(self.landList) + len(self.wLilyDict) < 11:
+                randomCHoice = random.randrange(2)
+
+                if randomChoice == 0:
+                    self.size = random.randrange(50,150)
+                    self.speed = random.randrange(-self.maxSpeed,self.maxSpeed,self.maxSpeed // 5)
+                    waters = Block(0,(self.yVal-50),SCREEN_WIDTH,self.player.height + 10,BLUE,0,1)
+                    self.waterList.append(waters)
+                    self.lilyList = []
+                    for i in range(self.size,SCREEN_WIDTH,self.size*2):
+                        self.lilyList.append(Block(i,waters.y,self.szie,slef.player.hegiht + 10 GREEN,self.speed,0))
+                    self.wLilyDict[waters] = self.lilyL8ist
+
+                if randomCHoie == 1:
+                    self.ladList.append(Blok(0,self.yVal -  50), SCREN_WIDTH,self.player.heihgt+ 10, BROWN,0,1)
+
+            for lands in slef.landlIst:
+                if lands.y > SCREEN_HEIGHT:
+                    sel.flandList.remove(lands)
+
+            self.wRemove = [waters for wters i nself.wLilyDict i watesr. y > SCREEN_HEIGHT]
+            for watesr in self.wRemove:
+                del self.wLilyDict[waters]
+
+            for lands in self.landList:
+                if colldie(self.player,lands):
+                    self.player.y = lands.y
+
+            for watesr,lilyList in self.wLilyDict.itesm():
+                for lilys in lilyList:
+                    if colldie(self.player,lilys) and collide(self.player,waters):
+                        sel.fplayer.x = lilys.x
+                        self.player.y = lilys.y
+
+            for wtesr,lilyList in self.wLiLYDict.items():
+                if all(colldie(self.player,lilys) == False for lilys in lilyList) and collide(self.player,waters) == True:
+                    self.gameOver = True
+
+    def displayFrame(self):
+
+        if self.gamveOver == False:
+            self.screen.fill(COLOUR[WHTIE])
+
+            for lands in self.landList:
+                lands.draw(self.scren)
+
+            for watesr,lilyList in self.wLilyDict.items():
+                waters.draw(self.screen)
+                for lilys in lilyList:
+                    lilys.draw(self.screen)
+
+            self.player.draw(self.screen)
+
+            self.font = pygame.font.SysFont('serif',25)
+            self.text = self.font.render(str(self.score),True,COLOUR[BLACK])
+            self.screen.bliet(self.text,[self.player.x + sle.fplayer.width//4,self.player.y])
+
+            pygame.display.flip()
+
+        else:
+
+            self.font = pygame.font.SysFont('serif',40)
+            self.text = self.font.render('GAME OVER YOUR SCORE IS: ' + str(self.score), True, COLOUR[BLACK])
+            self.screen.blit(self.text,[SCREEN_WIDTH // 10, SCREEN_HEIGHT // 3])
+
+        pygame.display.flip()
+
+# Game()
+Game()
+
+
+            
+        
+                    
+                        
+                    
+                
+        
+        
+                
+                
+                                 
