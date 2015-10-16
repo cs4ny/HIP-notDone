@@ -1,0 +1,74 @@
+#HIP
+#LOVE CALCULATOR UVA 10424
+
+def main():
+    """ This program will take in 2 names and caculate the names' love ratio """
+
+    # Loop:
+    while True:
+
+        # Take user's input
+        wordA = input("Please enter the first name: ")
+        wordB = input("Please enter the second name: ")
+
+        # Get the sum of all letters
+        sumA = sumLetter(wordA)
+        sumB = sumLetter(wordB)
+
+        # Find the ratio
+        rA = ratio(sumA,sumB)
+
+        # Print
+        print("The love ratio is ",rA)
+
+
+def sumLetter(word):
+    """ This function will return the total of all indexes """
+
+    # Alphabets
+    alphabets = ['a','b','c','d','e','f',
+                 'g','h','i','j','k','l',
+                 'm','n','o','p','q','r',
+                 's','t','u','v','w','x','y','z']
+
+    # Initialize
+    totIndex = 0
+    total = 0
+
+    # Loop 1 digit
+    for letters in word:
+        lIndex = alphabets.index(letters) + 1
+        totIndex += lIndex
+
+    # Loop 2 digit
+    totIndex = str(totIndex)
+    while len(totIndex) != 1:
+        # Turn to string
+        totIndex = str(totIndex)
+        # Add numbers
+        for letter in totIndex:
+            total += int(letter)
+        # Turn to string again
+        totIndex = str(total)
+        # Reset total
+        total = 0
+
+    # Return
+    return int(totIndex)
+
+def ratio(number1,number2):
+    """ This function will return a ratio less than 100% between 2 numbers """
+
+    # Check for a greater number
+    if number1 > number2:
+        ratio = (number2*100) / number1
+    else:
+        ratio = (number1*100) / number2
+
+    # Return
+    return ratio
+
+#main()
+main()
+        
+        
