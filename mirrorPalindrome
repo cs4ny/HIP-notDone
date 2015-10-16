@@ -1,0 +1,77 @@
+#HIP
+#PALINDROME  AND MIRRORED STRING UVA 401
+
+def main():
+    """ This program will test if a string is palindrome or mirrored """
+
+    # Set Loop:
+    while True:
+
+        # Ask for user input and turns it into upper case
+        string = input("Please enter a string: ")
+        string = string.upper()
+
+        # The two tests
+        paTest = palindromeTest(string)
+        mirTest = mirroredTest(string)
+
+        # Output for resutls
+        if paTest == True and mirTest== True:
+            print("This is a mirrored palindrrome string")
+        elif paTest == True:
+            print("This is a palindrome string.")
+        elif mirTest == True:
+            print("This is a mirrored string.")
+        else:
+            print("This is a normal string.")
+
+
+def palindromeTest(string):
+    """ This function check for palindrome string """
+
+    # Set count values
+    sameCount = 0
+
+    # Loop and check
+    for index in range(len(string)):
+        if string[index] == string[-1*(index+1)]:
+            sameCount += 1
+
+    # Return true
+    if sameCount == len(string):
+        return True
+
+
+def mirroredTest(string):
+    """ This function check for mirrored string """
+
+    # Create dictionary for reversed form
+    getReverse = dict([('A','A'),('E','3'),('H','H'),('I','I'),('J','L'),('L','J')
+                       ,('M','M'),('0','0'),('S','2'),('T','T'),('U','U'),('V','V'),
+                       ('Y','Y'),('W','W'),('1','1'),('O','O'),
+                       ('X','X'),('Z','5'),('2','S'),('3','E'),('5','Z'),('8','8')])
+
+    # Set count values
+    mirrorCount = 0
+
+    # Loop and check
+    for index in range(len(string)):
+        try:
+            if string[index] == getReverse[string[-1*(index+1)]]:
+                mirrorCount+=1
+        except:
+            pass
+
+
+    # Return True
+    if mirrorCount == len(string):
+        return True
+
+#main()
+main()
+                            
+                      
+
+        
+ 
+
