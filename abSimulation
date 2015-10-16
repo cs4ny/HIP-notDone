@@ -1,0 +1,441 @@
+#HIP
+#ANGRY BIRD SIMULATION
+
+import pygame
+import math
+import random
+
+#GLOBAL
+COLOUR = [(255,255,255),(0,0,0),(96,96,96),
+          (255,0,0),(0,255,0),(0,0,255),
+          (255,255,0),(255,0,255),(255,120,0)]
+
+WHITE = 0
+BLACK = 1
+GREY = 2
+RED = 3
+GREEN = 4
+BLUE = 5
+YELLOW = 6
+PURPLE = 7
+ORANGE =8
+
+SCREEN_WIDTH = 1300
+SCREEN_HEIGHT = 500
+SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
+
+
+# COLLISION DETECTION
+def collide(object1,object2):
+    """ This function check if 2 objects collide """
+
+    # Get info
+    object1Info = object1.getInfo()
+    object2Info = object2.getInfo()
+
+    # Set object's variable according to infos
+    x1 = object1Info[0]
+    x1width = object1Info[1] + object1Info[2]
+    y1 = object1Info[1]
+    y1height = object1Info[1] + object1Info[3]
+
+    x2 = object2Info[0]
+    x2width = object2Info[1] + object2Info[2]
+    y2 = object2Info[1]
+    y2height = object2Info[1] + object2Info[3]
+
+    # Check for collisions
+    if x1 <= x2width and x1width >= x2 and y1 <= y2height and y1height >= y2:
+        return True
+    else:
+        return False
+
+
+# STONE CLASS
+class Stone():
+    def __init__(self,x,y,angle,speed,state):
+
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        # Initialize
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.launchSpeed = speed
+        self.state = state
+        self.dx = 0
+        self.dy = 0
+        self.size = 25
+        self.time = 0
+        self.timer = False
+        self.sett()
+
+    def draw(self,screen):
+        pygame.draw.ellipse(screen,COLOUR[ORANGE],[self.x,self.y,self.size,self.size])
+
+    def update(self):
+        self.x += self.dx
+        self.y += self.dy
+
+    def setdx(self,dx):
+        self.dx = dx
+
+    def setdy(self,dy):
+        self.dy = dy
+
+    def initS(self,x,y,angle):
+        """ For new initialize """
+        self.angle = angle
+        self.x = x
+        self.y = y
+        self.timer = False
+        self.launchSpeed = 10
+        self.time = 0
+        self.newDy = 0
+        self.newDx = 0
+
+    def sett(self):
+        """ Initial vertical and horizonal components """
+        self.newDy = abs(self.launchSpeed * math.sin(self.angle))
+        self.newDx = abs(self.launchSpeed * math.cos(self.angle))
+        self.timeInAir = (self.newDy * 2) / 9.81
+
+    def launch(self):
+        """ Constant horizontal, Accelerated Vertical """
+        if self.timer == True:
+            if self.time < self.timeInAir:
+                self.time += 0.01
+
+                # Beautiful Vertical Velocity
+                self.newDy = (-9.81*self.time) + self.newDy
+
+                # State check
+                if self.state == 'normal':
+                    self.x += self.newDx
+                    self.y -= self.newDy
+
+                if self.state == 'reverse':
+                    self.x += (-1*self.newDx)
+                    self.y += (-1*self.newDy)
+
+    def getInfo(self):
+        """ Get info """
+        return[self.x,self.y,self.size,self.size]
+
+
+# BIGPLAYER CLASS
+class BigPlayer():
+    def __init__(self,x,y):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        # Initialize
+        self.x = x
+        self.y = y
+        self.dx = 0
+        self.dy = 0
+        self.size = 100
+
+    def draw(self,screen):
+        pygame.draw.ellipse(screen,COLOUR[GREEN],[self.x,self.y,self.size,self.size])
+
+    def update(self):
+        self.x += self.dx
+        self.y += self.dy
+
+    def setdx(self,dx):
+        self.dx = dx
+
+    def setdy(self,dy):
+        self.dy = dy
+
+    def getInfo(self):
+        """ Get info """
+        return[self.x,self.y,self.size,self.size]
+
+
+# WALL CLASS
+class Wall():
+    def __init__(self,x,y,width,height):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        # Initialize
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def draw(self,screen):
+        pygame.draw.rect(screen,COLOUR[GREY],[self.x,self.y,self.width,self.height])
+
+    def getInfo(self):
+        """ Get info """
+        return[self.x,self.y,self.width,self.height]
+
+
+#GAME CLASS
+class Game():
+    def __init__(self):
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        #Initialize
+        pygame.init()
+        self.screen = pygame.display.set_mode(SCREEN_SIZE)
+        clock = pygame.time.Clock()
+
+        self.initialize()
+
+        loop = True
+        while loop:
+            # Process Events/ Game Logic/ Draw/ Pause
+            loop = self.processEvents()
+            self.runLogic()
+            self.displayFrame()
+            clock.tick(30)
+
+        pygame.quit()
+
+    def initialize(self):
+
+        # Player and stones
+        self.p1 = BigPlayer(50,400)
+        self.stone1 = Stone(self.p1.x + self.p1.size, self.p1.y - 35,5.5,10,'normal')
+        self.p2 = BigPlayer(SCREEN_WIDTH - 150,400)
+        self.stone2 = Stone(self.p2.x - 25,self.p2.y - 35,3.5,10,'reverse')
+
+        # Wall
+        self.wall = Wall(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2, 50, SCREEN_HEIGHT // 2)
+
+        # Player's health
+        self.health1 = 100
+        self.health2 = 100
+
+        # Turn and Wind
+        self.turn = 1
+        self.wind = random.randrange(-100,100,20)
+
+
+    def processEvents(self):
+
+        loop = True
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                loop = False
+
+            # KeyDown
+            elif event.type == pygame.KEYDOWN:
+
+                #Launch Speed Control
+                if event.key == pygame.K_LEFT:
+                    if self.turn == 1:
+                        if self.stone1.launchSpeed > 5:
+                            self.stone1.launchSpeed -=  5
+                    if self.turn == 2:
+                        if self.stone2.launchSpeed < 40:
+                            self.stone2.launchSpeed +=  5
+                elif event.key == pygame.K_RIGHT:
+                    if self.turn == 1:
+                        if self.stone1.launchSpeed < 40:
+                            self.stone1.launchSpeed +=  5
+                    if self.turn == 2:
+                        if self.stone2.launchSpeed > 5:
+                            self.stone2.launchSpeed -=  5
+
+                # Angle Control
+                elif event.key == pygame.K_UP:
+                    if self.turn == 1:
+                        if self.stone1.angle > 4.8:
+                            self.stone1.angle -= 0.1
+                    if self.turn == 2:
+                        if self.stone2.angle < 4.7:
+                            self.stone2.angle += 0.1
+                elif event.key == pygame.K_DOWN:
+                    if self.turn == 1:
+                        if self.stone1.angle <= 6.1:
+                            self.stone1.angle += 0.1
+                    if self.turn == 2:
+                        if self.stone2.angle > 3.2:
+                            self.stone2.angle -= 0.1
+
+                # Launching Stones
+                elif event.key == pygame.K_SPACE:
+                    if self.turn == 1:
+                        if self.wind < 0:
+                            self.stone1.launchSpeed -= abs(self.wind // 10)
+                        if self.wind > 0:
+                            self.stone1.launchSpeed += abs(self.wind // 10)
+                        self.stone1.sett()
+                        self.stone1.timer = True
+
+                    if self.turn == 2:
+                        if self.wind < 0:
+                            self.stone2.launchSpeed += abs(self.wind // 10)
+                        if self.wind > 0:
+                            self.stone2.launchSpeed -= abs(self.wind // 10)
+                        self.stone2.sett()
+                        self.stone2.timer = True
+
+
+                # Player's movement
+                elif event.key == pygame.K_a:
+                    if self.turn == 1:
+                        self.stone1.setdx(-10)
+                        self.stone1.setdy(0)
+                        self.p1.setdx(-10)
+                        self.p1.setdy(0)
+
+                elif event.key == pygame.K_d:
+                    if self.turn == 1:
+                        self.stone1.setdx(10)
+                        self.stone1.setdy(0)
+                        self.p1.setdx(10)
+                        self.p1.setdy(0)
+
+                elif event.key == pygame.K_l:
+                    if self.turn == 2:
+                        self.stone2.setdx(10)
+                        self.stone2.setdy(0)
+                        self.p2.setdx(10)
+                        self.p2.setdy(0)
+
+
+                elif event.key == pygame.K_j:
+                    if self.turn == 2:
+                        self.stone2.setdx(-10)
+                        self.stone2.setdy(0)
+                        self.p2.setdx(-10)
+                        self.p2.setdy(0)
+
+            # KeyUp
+            elif event.type == pygame.KEYUP:
+                self.p1.setdx(0)
+                self.p1.setdy(0)
+                self.p2.setdx(0)
+                self.p2.setdy(0)
+                self.stone1.setdx(0)
+                self.stone2.setdx(0)
+                self.stone1.setdy(0)
+                self.stone2.setdy(0)
+
+        return loop
+
+    def runLogic(self):
+
+        # Update players
+        self.p1.update()
+        self.p2.update()
+
+        # Update stones
+        self.stone1.update()
+        self.stone2.update()
+
+        # Angle line
+        if self.turn == 1:
+            self.changeX = math.cos(self.stone1.angle) * self.stone1.launchSpeed
+            self.changeY = math.sin(self.stone1.angle) * self.stone1.launchSpeed
+            self.lineX = self.stone1.x + self.changeX
+            self.lineY = self.stone1.y + self.changeY
+
+        if self.turn == 2:
+            self.changeX = math.cos(self.stone2.angle) * self.stone2.launchSpeed
+            self.changeY = math.sin(self.stone2.angle) * self.stone2.launchSpeed
+            self.lineX = self.stone2.x + self.changeX
+            self.lineY = self.stone2.y + self.changeY
+
+        # Turn check
+        if self.turn == 1:
+            if self.stone1.timer == True:
+                self.stone1.launch()
+
+        if self.turn == 2:
+            if self.stone2.timer == True:
+                self.stone2.launch()
+
+        # Turn ends
+        if self.stone1.y > 450:
+            self.stone1.initS(self.p1.x + self.p1.size,self.p1.y - 35,5.5)
+            self.turn = 2
+            #self.wind = random.randrange(-100,100,20)
+        if self.stone2.y > 450:
+            self.stone2.initS(self.p2.x - 25,self.p2.y - 35,3.5)
+            self.turn = 1
+            #self.wind = random.randrange(-100,100,20)
+
+        # Wall collision
+        if collide(self.stone1,self.wall):
+            self.stone1.initS(self.p1.x + self.p1.size,self.p1.y - 35,5.5)
+            self.p1.x = 50
+            self.turn == 2
+            self.wind = random.randrange(-100,100,20)
+        if collide(self.stone2,self.wall):
+            self.stone2.initS(self.p2.x - 25,self.p2.y - 35,3.5)
+            self.p2.x = SCREEN_WIDTH - 150
+            self.turn == 1
+            self.wind = random.randrange(-100,100,20)
+
+        # Stone collision
+        if collide(self.stone2,self.p1):
+            print('1.hit')
+            self.health1 += 10
+            self.stone2.initS(self.p2.x - 25,self.p2.y - 35,3.5)
+            self.turn = 1
+            #self.wind = random.randrange(-100,100,20)
+        if collide(self.stone1,self.p2):
+            print('2.hit')
+            self.health2 -= 10
+            self.stone1.initS(self.p1.x + self.p1.size,self.p1.y - 35,5.5)
+            self.turn = 2
+            #self.wind = random.randrange(-100,100,20)
+
+        # Check for 0 health
+        if self.health1 == 200 or self.health2 == 0:
+            self.initialize()
+
+    def displayFrame(self):
+
+        self.screen.fill(COLOUR[WHITE])
+
+        # Text
+        font = pygame.font.SysFont("serif",20)
+        text = font.render('PLAYER 1',True,COLOUR[BLACK])
+        text2 = font.render('PLAYER 2',True,COLOUR[BLACK])
+        wind = font.render('WIND',True,COLOUR[BLACK])
+
+        self.screen.blit(text2,[SCREEN_WIDTH -300,50])
+        self.screen.blit(text,[100,50])
+        self.screen.blit(wind,[SCREEN_WIDTH/2 -50,50])
+
+        # Stone, Player, Wall
+        self.stone1.draw(self.screen)
+        self.stone2.draw(self.screen)
+        self.p1.draw(self.screen)
+        self.p2.draw(self.screen)
+        self.wall.draw(self.screen)
+
+        # Angle Line
+        if self.turn == 1:
+            pygame.draw.line(self.screen,COLOUR[BLUE],(self.stone1.x,self.stone1.y),(self.lineX,self.lineY),5)
+        elif self.turn == 2:
+            pygame.draw.line(self.screen,COLOUR[BLUE],(self.stone2.x,self.stone2.y),(self.lineX,self.lineY),5)
+
+        # Health bar
+        pygame.draw.line(self.screen,COLOUR[RED],(self.health1,100),(200,100),10)
+        pygame.draw.line(self.screen,COLOUR[RED],(SCREEN_WIDTH - 300, 100),((1000 + self.health2),100),10)
+
+        # Wind bar fix this later
+        if self.wind < 0:
+            pygame.draw.line(self.screen,COLOUR[PURPLE],((SCREEN_WIDTH / 2 - abs(self.wind)) - 50,100),(SCREEN_WIDTH/2 - self.wind,100),10)
+        if self.wind > 0:
+            pygame.draw.line(self.screen,COLOUR[PURPLE],(SCREEN_WIDTH / 2,100),(SCREEN_WIDTH/2 + self.wind,100),10)
+
+        pygame.display.flip()
+
+#GAME
+Game()
+
+   
+    
+    
