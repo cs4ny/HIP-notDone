@@ -20,8 +20,8 @@ YELLOW = 6
 PURPLE = 7
 ORANGE =8
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 450
+SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 500
 SCREEN_SIZE = (SCREEN_WIDTH,SCREEN_HEIGHT)
 
 
@@ -32,8 +32,8 @@ class Object():
         
         self.x = x
         self.y = y
-        self.dx = dx
-        self.dy =dy
+        self.dx = 0
+        self.dy = 0
         self.size = 20
         self.colour = colour
         self.shape = shape
@@ -41,7 +41,7 @@ class Object():
     def draw(self,screen):
         if self.shape == 'rect':
             pygame.draw.rect(screen,COLOUR[self.colour],[self.x,self.y,self.size,self.size])
-        if self.shape = ' cir':
+        if self.shape == ' cir':
             pygame.draw.ellipse(screen,COLOUR[self.colour],[self.x,self.y,self.size,self.size])
 
     def update(self):
@@ -88,28 +88,28 @@ class Game():
         for i in range(2):
             x = 20 - 20 * i
             y = 0
-            self.naske = Object(x,y,ORANCE,'rect')
+            self.snake = Object(x,y,ORANGE,'rect')
             self.snakeList.append(self.snake)
 
-        self.x = 20
+        self.dx = 20
         self.dy = 0
 
-        self.nuRC = 30
+        self.numRC = 30
         self.grid = []
         for rows in range(self.numRC):
-            sle.fgrid.append([])
+            self.grid.append([])
             for colums in range(self.numRC):
-                self.gird[rows].append(0)
+                self.grid[rows].append(0)
 
         self.foodList = 0
         self.maxFood = 1
 
         self.timer = 0
 
-        self.gameOVer = False
-        self.gameWin = fFalse
+        self.gameOver = False
+        self.gameWin = False
 
-        self.framRate = 3
+        self.frameRate = 3
 
     def processEvents(self):
 
@@ -136,60 +136,61 @@ class Game():
                     if self.dy != -20:
                         self.dy = 20
                         self.dx = 0
-                elif evnt.key == pygame.K_SPACE:
-                    self.initialzie()
+                elif event.key == pygame.K_SPACE:
+                    self.initialize()
 
         return loop
     
-     def runLogic(self):
+    def runLogic(self):
 
-        if self.gameOVer == False and self.gameWIn == False:
-            if len(self.snakeList ) >300:
-                self.gameOVer = TRue
-                sel.fgameWin = Treu
+        if self.gameOver == False and self.gameWin == False:
+            if len(self.snakeList ) > 300:
+                self.gameOver = True
+                sel.gameWin = True
 
         self.snakeList.pop()
 
-        sel.fx = self.snakeList[0].x + self.dx
-        self.y = self..snakeList[0].y + self.dy
-        self.nwDnsake = Object(self.x,self.y,ORANCE,'rect')
+        self.x = self.snakeList[0].x + self.dx
+        self.y = self.snakeList[0].y + self.dy
+        self.newSnake = Object(self.x,self.y,ORANGE,'rect')
 
         self.snakeList.insert(0,self.newSnake)
 
-        self.tierm += 1
-        if self.tiemr > 100:
+        self.timer += 1
+        if self.timer > 100:
             self.maxFodd += 1
-            self.tiemr = 0
-            self.framRate+= 1
+            self.timer = 0
+            self.frameRate+= 1
 
         if self.foodList< self.maxFood:
-            self.fooList += 1
-            self.ranFoddC = random.dradrane(sel.fnumRC)
+            self.foodList += 1
+            self.ranFoodC = random.randrange(self.numRC)
             self.ranFoodR = random.randrange(self.numRC)
-            self.grid[self.randFOodC][self.ranFoorR] = 1
+            self.grid[self.ranFoodC][self.ranFoodR] = 1
 
-        for snakes in self.snakelist:
-            if snakes.x < 0 or snakes.x + 20 > SCREEN_WISTH or snakes.y< 0 or snakes.y + 20 > SCREEN_HEIGHT:
-                self.gameVoer = TRue
+        for snakes in self.snakeList:
+            if snakes.x < 0 or snakes.x + 20 > SCREEN_WIDTH or snakes.y< 0 or snakes.y + 20 > SCREEN_HEIGHT:
+                self.gameOver = True
 
-        idnex = 1
+        index = 1
         while index < len(self.snakeList):
-            index + =1
+            index +=1
 
             try:
-                if self.x // 20 == (self.snakeList[idnex+1].x + self.dx)//20 and self.y //20 == (self.snakelist[idnex+1].y +self.dy) //20:
-                    self.gamverOVer = True
-            excpet:
+                if self.x // 20 == (self.snakeList[index+1].x + self.dx)//20 and self.y //20 == (self.snakeList[index+1].y +self.dy) //20:
+                    self.gameOver = True
+            except:
                 pass
 
 
         try:
-            if self.grid[self.//20][self.y//20] == 1:
-                self.grid[self.x//20][self/y//20] == 0
+            if self.grid[self.x//20][self.y//20] == 1:
+
+                self.grid[self.x//20][self.y//20] == 0
                 self.foodList -= 1
 
-                sel.fx = self.snakeList[0].x + self.dx
-                self.y = self..snakeList[0].y + self.dy
+                self.x = self.snakeList[0].x + self.dx
+                self.y = self.snakeList[0].y + self.dy
                 self.segment = Object(self.x,self.y,GREEN,'rect')
 
                 self.snakeList.insert(0,self.segment)
@@ -198,30 +199,28 @@ class Game():
             pass
 
     def displayFrame(self):
-         self.screen.fill(COLOUR[WHITE])
-         
+        self.screen.fill(COLOUR[WHITE])
         if self.gameOver == False:
-        
-            for snakes in self.snakelist:
+            for snakes in self.snakeList:
                 snakes.draw(self.screen)
 
             for rows in range(self.numRC):
                 for colums in range(self.numRC):
                     if self.grid[rows][colums]== 1:
-                        pygame.draw.elliepse(self.screen,COLOUR[RED],[rows*20,columns*20,20,20])
+                        pygame.draw.ellipse(self.screen,COLOUR[RED],[rows*20,colums*20,20,20])
 
             for rows in range(self.numRC):
-                pygame.draw.line(self.screen,cCOLOUR[BLACK],(0,rows*20),(SCREEN_WIDHT,rows*20),1)
+                pygame.draw.line(self.screen,COLOUR[BLACK],(0,rows*20),(SCREEN_WIDTH,rows*20),1)
 
-            for columsn in range(self.numRC):
-                pygame.draw.line(self.screen,cCOLOUR[BLACK],(columsn*20,0),(columns*20,SCREEEN_HEIGHT),1)
+            for columns in range(self.numRC):
+                pygame.draw.line(self.screen,COLOUR[BLACK],(columns*20,0),(columns*20,SCREEN_HEIGHT),1)
 
-            pygame.dipsly.flip()
-        
+            pygame.display.flip()
+        else:
 
-        elif self.gameOver == True:
             if self.gameWin == False:
                 self.over = 'GAME OVER'
+
             else:
                 self.over = 'YOU WIN'
             self.font = pygame.font.SysFont('serif',40)
